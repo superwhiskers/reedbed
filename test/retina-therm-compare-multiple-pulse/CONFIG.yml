@@ -22,7 +22,7 @@ simulation:
     r: 0 um
   time:
     dt: 100 us
-    tmax: 1 s # $( ${/multi_pulse/N}*${/multi_pulse/t0} + 5*${/multi_pulse/tau})
+    tmax: $( ${/multi_pulse/N}*${/multi_pulse/t0} + 5*${/multi_pulse/tau})
 thermal:
   k: 0.006306 W/cm/K
   rho: 1 g / cm^3
@@ -64,7 +64,7 @@ reedbed:
   pulses: "$( [ {'arrival_time' : n*${/multi_pulse/t0}.to('s').magnitude, 'duration':${/multi_pulse/tau}.to('s').magnitude, 'scale':1}  for n in range(${/multi_pulse/N})] )"
 
 
-retina-therm-cw:
+retina-therm:
   thermal:
     k: $( str(${/thermal/k}) )
     rho: $( str(${/thermal/rho}) )
@@ -84,10 +84,10 @@ retina-therm-cw:
       mua: $(str(${/layers/2/mua}))
   laser:
     E0: $(str(${/laser/E0}))
-    R: $(str(${/laser/R}))
+    one_over_e_radius: $(str(${/laser/R}))
     wavelength: $(str(${/laser/wavelength}))
 
-  simulation:
+  temperature_rise:
     use_approximation: True
     temperature_rise:
       method: quad
@@ -95,15 +95,14 @@ retina-therm-cw:
       z: $(str(${/simulation/sensor/z}))
       r: $(str(${/simulation/sensor/r}))
     time:
-      dt: $(str(${/simulation/time/dt}))
+      resolution: $(str(${/simulation/time/dt}))
       max: $(str(${/simulation/time/tmax}))
-    output_file: output/retina-therm/CW/Tvst.txt
-    output_config_file: output/retina-therm/CW/CONFIG.yml
+    output_file: output/retina-therm/Tvst-CW.txt
+    output_config_file: output/retina-therm/CONFIG-CW.yml
 
-retina-therm-mp:
-  input_file: ./output/retina-therm/CW/Tvst.txt
-  output_file: 'output/retina-therm/MP/Tvst.txt'
-  output_config_file: output/retina-therm/MP/CONFIG.yml
-  t0: $(str(${/multi_pulse/t0}))
-  tau: $(str(${/multi_pulse/tau}))
-  N :  $(${/multi_pulse/N})
+  multiple_pulse:
+    input_file: ./output/retina-therm/Tvst-CW.txt
+    output_file: 'output/retina-therm/Tvst-MP.txt'
+    output_config_file: output/retina-therm/CONFIG-MP.yml
+    pulses: "$( [ {'arrival_time' : str(n*${/multi_pulse/t0}), 'duration':str(${/multi_pulse/tau}.to('s')), 'scale':1}  for n in range(${/multi_pulse/N})] )"
+
